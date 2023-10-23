@@ -1,3 +1,15 @@
+# This is a modified version of DynaSLAM
+
+**TODO:**
+- [x] `./monocular.sh`
+- [x] `python3 Check.py`
+- [ ] `./monocular_dyna.sh`
+- [ ] tensorflow -> PyTorch
+- [ ] Mask R-CNN -> OpenSet Mask R-CNN
+
+
+---
+
 # DynaSLAM
 
 [[Project]](https://bertabescos.github.io/DynaSLAM/)   [[arXiv]](https://arxiv.org/abs/1806.05620)   [[Journal]](https://ieeexplore.ieee.org/document/8421015)
