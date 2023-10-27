@@ -32,14 +32,44 @@ SegmentDynObject::SegmentDynObject(){
     ImportSettings();
     std::string x;
     setenv("PYTHONPATH", this->py_path.c_str(), 1);
-    x = getenv("PYTHONPATH");
+    x = getenv("PYTHONPATH"); // = /ws/external/src/python
     Py_Initialize();
     this->cvt = new NDArrayConverter();
-    this->py_module = PyImport_ImportModule(this->module_name.c_str());
+    this->py_module = PyImport_ImportModule(this->module_name.c_str()); // MaskRCNN
+    std::cout << "py_module: " << this->module_name.c_str() << std::endl;
     assert(this->py_module != NULL);
+    std::cout << "class_name: " << this->class_name.c_str() << std::endl; // Mask
+
+    // PyObject* myModuleString = PyString_FromString("test");
+    //std::string myModuleString = "test";
+    //PyObject* myModule       = PyImport_Import(myModuleString.c_str());
+    PyObject* myModule = PyImport_ImportModule(this->module_name.c_str());
+    std::cout << "import" << std::endl;
+    if (myModule)
+	    std::cout << "OK" << std::endl;
+    else
+	    std::cout << "NONO" << std::endl;
+    if (myModule != NULL){
+	    std::cout << "NOT NULL" << std::endl;
+    }else{
+	    std::cout << "Yes NULL" << std::endl;
+	    PyErr_Print();
+    }
+    PyObject* myFunction     = PyObject_GetAttrString(myModule, "Hello");
+    if( myFunction ){
+	    std::cout << "Yes" << std::endl;
+	    PyEval_CallObject( myFunction, NULL );
+    }else{
+	    std::cout << "No" << std::endl;
+	    fprintf( stderr, "myFunction is NULL" );
+    }
+    std::cout << "Success" << std::endl;
+
     this->py_class = PyObject_GetAttrString(this->py_module, this->class_name.c_str());
+    std::cout << "done py_class" << std::endl;
     assert(this->py_class != NULL);
     this->net = PyInstance_New(this->py_class, NULL, NULL);
+    std::cout << "done net" << std::endl;
     assert(this->net != NULL);
     std::cout << "Creating net instance..." << std::endl;
     cv::Mat image  = cv::Mat::zeros(480,640,CV_8UC3); //Be careful with size!!
@@ -81,17 +111,16 @@ cv::Mat SegmentDynObject::GetSegmentation(cv::Mat &image,std::string dir, std::s
 }
 
 void SegmentDynObject::ImportSettings(){
-    std::string strSettingsFile = "./Examples/RGB-D/MaskSettings.yaml";
+    std::string strSettingsFile = "/ws/external/Examples/RGB-D/MaskSettings.yaml";
     cv::FileStorage fs(strSettingsFile.c_str(), cv::FileStorage::READ);
     fs["py_path"] >> this->py_path;
     fs["module_name"] >> this->module_name;
     fs["class_name"] >> this->class_name;
     fs["get_dyn_seg"] >> this->get_dyn_seg;
-
-    // std::cout << "    py_path: "<< this->py_path << std::endl;
-    // std::cout << "    module_name: "<< this->module_name << std::endl;
-    // std::cout << "    class_name: "<< this->class_name << std::endl;
-    // std::cout << "    get_dyn_seg: "<< this->get_dyn_seg << std::endl;
+    std::cout << "    py_path: "<< this->py_path << std::endl;
+    std::cout << "    module_name: "<< this->module_name << std::endl;
+    std::cout << "    class_name: "<< this->class_name << std::endl;
+    std::cout << "    get_dyn_seg: "<< this->get_dyn_seg << std::endl;
 }
 
 
