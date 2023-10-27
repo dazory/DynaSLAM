@@ -5,7 +5,7 @@
 * For more information see <https://github.com/bertabescos/DynaSLAM>.
 *
 */
-
+#include <Python.h>
 #include "MaskNet.h"
 #include <iostream>
 #include <fstream>
@@ -34,47 +34,29 @@ SegmentDynObject::SegmentDynObject(){
     setenv("PYTHONPATH", this->py_path.c_str(), 1);
     x = getenv("PYTHONPATH"); // = /ws/external/src/python
     Py_Initialize();
+    std::cout << "Load module and instaces..." << std::endl;
     this->cvt = new NDArrayConverter();
     this->py_module = PyImport_ImportModule(this->module_name.c_str()); // MaskRCNN
-    std::cout << "py_module: " << this->module_name.c_str() << std::endl;
+    std::cout << "   py_module: " << this->module_name.c_str() << std::endl;
     assert(this->py_module != NULL);
-    std::cout << "class_name: " << this->class_name.c_str() << std::endl; // Mask
-
-    // PyObject* myModuleString = PyString_FromString("test");
-    //std::string myModuleString = "test";
-    //PyObject* myModule       = PyImport_Import(myModuleString.c_str());
-    PyObject* myModule = PyImport_ImportModule(this->module_name.c_str());
-    std::cout << "import" << std::endl;
-    if (myModule)
-	    std::cout << "OK" << std::endl;
-    else
-	    std::cout << "NONO" << std::endl;
-    if (myModule != NULL){
-	    std::cout << "NOT NULL" << std::endl;
-    }else{
-	    std::cout << "Yes NULL" << std::endl;
-	    PyErr_Print();
-    }
-    PyObject* myFunction     = PyObject_GetAttrString(myModule, "Hello");
-    if( myFunction ){
-	    std::cout << "Yes" << std::endl;
-	    PyEval_CallObject( myFunction, NULL );
-    }else{
-	    std::cout << "No" << std::endl;
-	    fprintf( stderr, "myFunction is NULL" );
-    }
-    std::cout << "Success" << std::endl;
-
+    std::cout << "   class_name: " << this->class_name.c_str() << std::endl; // Mask
     this->py_class = PyObject_GetAttrString(this->py_module, this->class_name.c_str());
-    std::cout << "done py_class" << std::endl;
     assert(this->py_class != NULL);
-    this->net = PyInstance_New(this->py_class, NULL, NULL);
-    std::cout << "done net" << std::endl;
+    // python3 does not support PyInstance_New
+    //this->net = PyInstance_New(this->py_class, NULL, NULL);
+    this->net = PyObject_CallObject(this->py_class, NULL);
     assert(this->net != NULL);
+    if(this->net == NULL)
+        PyErr_Print();
     std::cout << "Creating net instance..." << std::endl;
     cv::Mat image  = cv::Mat::zeros(480,640,CV_8UC3); //Be careful with size!!
     std::cout << "Loading net parameters..." << std::endl;
-    GetSegmentation(image);
+    //std::string dir = "/ws/data/rgbd_dataset_freiburg1_xyz/rgb";
+    //std::string name = "1305031102.175304.png";
+    std::string dir = "/ws/external/masks";
+    std::string name = "";
+    GetSegmentation(image, dir, name);
+    //PyErr_Print();
 }
 
 SegmentDynObject::~SegmentDynObject(){
@@ -85,15 +67,30 @@ SegmentDynObject::~SegmentDynObject(){
 }
 
 cv::Mat SegmentDynObject::GetSegmentation(cv::Mat &image,std::string dir, std::string name){
+	std::cout << "Hello GetSegmentation: " << dir+"/"+name  << std::endl;
     cv::Mat seg = cv::imread(dir+"/"+name,CV_LOAD_IMAGE_UNCHANGED);
+    //cv::Mat seg = cv::imread(dir+"/"+name, cv::IMREAD_GRAYSCALE);
+    int rows = seg.rows;
+    int cols = seg.cols;
+    std::cout << "rows and cols:" << rows << ", " << cols << std::endl;
     if(seg.empty()){
+	    std::cout << "No seg" << std::endl;
         PyObject* py_image = cvt->toNDArray(image.clone());
         assert(py_image != NULL);
+	std::cout << "1 : " << this->get_dyn_seg.c_str() << std::endl;
+	try{
         PyObject* py_mask_image = PyObject_CallMethod(this->net, const_cast<char*>(this->get_dyn_seg.c_str()),"(O)",py_image);
+	}catch(std::string error){
+		std::cout << error << std::endl;
+	PyErr_Print();
+	}
         seg = cvt->toMat(py_mask_image).clone();
+	std::cout << "2" << std::endl;
         seg.cv::Mat::convertTo(seg,CV_8U);//0 background y 1 foreground
+	std::cout << "3" << std::endl;
         if(dir.compare("no_save")!=0){
             DIR* _dir = opendir(dir.c_str());
+	    std::cout << "4" << std::endl;
             if (_dir) {closedir(_dir);}
             else if (ENOENT == errno)
             {
@@ -104,6 +101,7 @@ cv::Mat SegmentDynObject::GetSegmentation(cv::Mat &image,std::string dir, std::s
                     mkdir(str.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
                 }
             }
+	    std::cout << "5" << std::endl;
             cv::imwrite(dir+"/"+name,seg);
         }
     }
