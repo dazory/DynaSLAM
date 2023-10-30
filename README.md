@@ -32,6 +32,9 @@
     ```
 
 3. Run DynaSLAM
+   
+    1. Download a sequence from http://vision.in.tum.de/data/datasets/rgbd-dataset/download and uncompress it.
+    2. Place the dataset in the folder `/ws/data`. 
 
     - [X] Test ORB SLAM2
     
@@ -47,19 +50,22 @@
       python3 Check.py
        ```
       
-    - [ ] Test DynaSLAM
-    
+    - [X] Test DynaSLAM
+      
+      1. Place the [mask_rcnn_coco.h5](https://github.com/matterport/Mask_RCNN/releases/download/v2.0/mask_rcnn_coco.h5) model in the folder `/ws/external/src/python/`.
+
        ```shell
       cd /ws/external/Examples/
       ./monocular_dyna.sh
        ```
 
 
-
 **TODO:**
 - [x] `./monocular.sh`
 - [x] `python3 Check.py`
-- [ ] `./monocular_dyna.sh`
+  - [X] Convert tensorflow 1.x to tensorflow 2.x
+- [X] `./monocular_dyna.sh`
+  - [X] Edit the code to convert c++ opencv Mat <-> python numpy array.
 - [ ] tensorflow -> PyTorch
 - [ ] Mask R-CNN -> OpenSet Mask R-CNN
 
