@@ -1,5 +1,61 @@
 # This is a modified version of DynaSLAM
 
+## How to run?
+0. Clone the repository 
+
+   ```shell
+   git clone https://github.com/dazory/DynaSLAM.git
+   ```
+
+1. Build docker
+
+    ```shell
+    docker pull dshong/dynaslam:ubuntu20_noetic_cuda
+    ```
+
+2. Run docker
+
+    ```shell
+    cd DynaSLAM
+    vim run_docker.sh 
+    ```
+    
+    Change the path of the dataset and the path of the DynaSLAM repository.
+    
+   ```shell
+    DATA_FOLDER=YOUR_PATH_TO_DATASET
+    ```
+
+    ```shell
+   chmod 777 run_docker.sh 
+   ./run_docker.sh
+    ```
+
+3. Run DynaSLAM
+
+    - [X] Test ORB SLAM2
+    
+       ```shell
+      cd /ws/external/Examples/
+      ./monocular.sh
+       ```
+      
+    - [X] Test Mask RCNN
+    
+       ```shell
+      cd /ws/external/src/python/
+      python3 Check.py
+       ```
+      
+    - [ ] Test DynaSLAM
+    
+       ```shell
+      cd /ws/external/Examples/
+      ./monocular_dyna.sh
+       ```
+
+
+
 **TODO:**
 - [x] `./monocular.sh`
 - [x] `python3 Check.py`
