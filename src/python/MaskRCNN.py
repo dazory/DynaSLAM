@@ -75,7 +75,6 @@ class Mask:
         print('Initialated Mask RCNN network...')
 
     def GetDynSeg(self,image,image2=None):
-        print(f"=== GetDynSeg ===")
         h = image.shape[0]
         w = image.shape[1]
         if len(image.shape) == 2:
@@ -151,7 +150,13 @@ class Mask:
                 image_m = r['masks'][:,:,i]
                 mask[image_m == 1] = 1.		
             i+=1
-	#print('GetSeg mask shape:',mask.shape)
+        print(f'GetDynSeg: mask shape = {mask.shape}')
+
+        #import cv2
+        #cv2.imwrite("/ws/external/masks/tmp1.jpg", mask)
+        #import pdb
+        #pdb.set_trace()
+        mask = np.asarray(mask, dtype=np.uint8)
         return mask
     
 	
