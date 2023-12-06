@@ -9,6 +9,8 @@
 #include "Conversion.h"
 #include <iostream>
 
+const int CV_MAX_DIM = 32;
+
 
 namespace DynaSLAM
 {
@@ -71,7 +73,7 @@ static PyObject* failmsgp(const char *fmt, ...)
     return 0;
 }
 
-class NumpyAllocator : public MatAllocator
+class NumpyAllocator : public cv::MatAllocator // MatAllocator
 {
 public:
     NumpyAllocator() {}
@@ -107,7 +109,10 @@ public:
         if(!o)
         {
 
-            CV_Error_(CV_StsError, ("The numpy array of typenum=%d, ndims=%d can not be created", typenum, dims));
+            // OpenCV < 4.x
+            // CV_Error_(CV_StsError, ("The numpy array of typenum=%d, ndims=%d can not be created", typenum, dims));
+            // OpenCV == 4.x
+            CV_Error_(cv::Error::StsError, ("The numpy array of typenum=%d, ndims=%d can not be created", typenum, dims));
         }
         refcount = refcountFromPyObject(o);
 
@@ -129,8 +134,10 @@ public:
         Py_DECREF(o);
     }
 #else
-
-    bool allocate(UMatData* u, int accessflags, UMatUsageFlags usageFlags) const {
+// OpenCV < 4.x
+//    bool allocate(UMatData* u, int accessflags, UMatUsageFlags usageFlags) const {
+// OpenCV == 4.x
+    bool allocate(UMatData* u, AccessFlag accessflags, UMatUsageFlags usageFlags) const {
 
         if(!u) return false;
         return true;
@@ -143,8 +150,12 @@ public:
         Py_INCREF(o);
         Py_DECREF(o);
     }
+// OpenCV < 4.x
+//    UMatData* allocate(int dims, const int* sizes, int type,
+//                       void* data, size_t* step, int flags, UMatUsageFlags usageFlags) const {
+// OpenCV == 4.x
     UMatData* allocate(int dims, const int* sizes, int type,
-                       void* data, size_t* step, int flags, UMatUsageFlags usageFlags) const {
+                       void* data, size_t* step, AccessFlag flags, UMatUsageFlags usageFlags) const {
         int depth = CV_MAT_DEPTH(type);
         int cn = CV_MAT_CN(type);
 
@@ -168,8 +179,10 @@ public:
         PyObject* o = PyArray_SimpleNew(dims, _sizes, typenum);
         if(!o)
         {
-
-            CV_Error_(CV_StsError, ("The numpy array of typenum=%d, ndims=%d can not be created", typenum, dims));
+            // OpenCV < 4.x
+            // CV_Error_(CV_StsError, ("The numpy array of typenum=%d, ndims=%d can not be created", typenum, dims));
+            // OpenCV == 4.x
+            CV_Error_(cv::Error::StsError, ("The numpy array of typenum=%d, ndims=%d can not be created", typenum, dims));
         }
         UMatData* u = new UMatData(this);
         u->refcount = *refcountFromPyObject(o);

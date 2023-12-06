@@ -134,7 +134,10 @@ cv::Mat SegmentDynObject::GetSegmentation(cv::Mat &image,std::string dir, std::s
         std::cerr << "The image is empty!" << std::endl;
     }
     std::cout << "GetSegmentation: " << dir+"/"+name  << std::endl;
-    cv::Mat seg = cv::imread(dir+"/"+name,CV_LOAD_IMAGE_UNCHANGED);
+    // OpenCV < 4.x
+    // cv::Mat seg = cv::imread(dir+"/"+name,CV_LOAD_IMAGE_UNCHANGED);
+    // OpenCV == 4.x
+    cv::Mat seg = cv::imread(dir+"/"+name, cv::IMREAD_UNCHANGED);
     //cv::Mat seg = cv::imread(dir+"/"+name, cv::IMREAD_GRAYSCALE);
     int rows = seg.rows;
     int cols = seg.cols;
